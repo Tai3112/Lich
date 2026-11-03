@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub Pro - Ghim Lịch & Nhắc Nhở Đa Kênh</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        discord: '#5865F2'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a, #090d16);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-slate-200 antialiased custom-scrollbar">
+
+    <!-- Toast Alert Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+    <div class="min-h-screen flex flex-col">
+        <!-- Navigation Header -->
+        <header class="glass sticky top-0 z-40 px-6 py-4 border-b border-slate-800">
+            <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                        <i class="fa-solid fa-calendar-check text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-indigo-300">EventHub Pro</h1>
+                        <p class="text-xs text-slate-400">Ghim Lịch & Nhắc Nhở Đa Kênh (Browser, Discord, Email)</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="flex items-center gap-2 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-brand-600 text-white shadow-md">
+                        <i class="fa-solid fa-table-columns"></i> Bảng Điều Khiển
+                    </button>
+                    <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-gear"></i> Cấu Hình Nhắc Nhở
+                    </button>
+                    <button onclick="switchTab('guide')" id="tab-guide" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-book"></i> Hướng Dẫn Deploy
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 gap-6">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="view-dashboard" class="space-y-6">
+                <!-- Top Status Banner -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="glass p-5 rounded-2xl flex items-center gap-4">
+                        <div class="p-3 bg-brand-500/10 text-brand-500 rounded-xl"><i class="fa-solid fa-calendar-days text-2xl"></i></div>
+                        <div>
+                            <div class="text-2xl font-bold" id="stat-total">0</div>
+                            <div class="text-xs text-slate-400">Tổng sự kiện</div>
+                        </div>
+                    </div>
+                    <div class="glass p-5 rounded-2xl flex items-center gap-4">
+                        <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl"><i class="fa-solid fa-thumbtack text-2xl"></i></div>
+                        <div>
+                            <div class="text-2xl font-bold" id="stat-pinned">0</div>
+                            <div class="text-xs text-slate-400">Đã ghim ưu tiên</div>
+                        </div>
+                    </div>
+                    <div class="glass p-5 rounded-2xl flex items-center gap-4">
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><i class="fa-solid fa-clock text-2xl"></i></div>
+                        <div>
+                            <div class="text-2xl font-bold" id="stat-upcoming">0</div>
+                            <div class="text-xs text-slate-400">Sắp diễn ra</div>
+                        </div>
+                    </div>
+                    <div class="glass p-5 rounded-2xl flex items-center gap-4">
+                        <div class="p-3 bg-discord/10 text-discord rounded-xl"><i class="fa-brands fa-discord text-2xl"></i></div>
+                        <div>
+                            <div class="text-sm font-semibold" id="stat-discord-status">Chưa kết nối</div>
+                            <div class="text-xs text-slate-400">Discord Webhook</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Grid: Form + Events List -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Form Thêm Sự Kiện -->
+                    <div class="lg:col-span-1 glass p-6 rounded-2xl space-y-4 h-fit">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="text-lg font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-circle-plus text-brand-500"></i> Tạo Lịch Ghim Mới
+                            </h2>
+                            <span id="form-mode" class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded-md">Mới</span>
+                        </div>
+
+                        <form id="event-form" onsubmit="handleSaveEvent(event)" class="space-y-4">
+                            <input type="hidden" id="event-id">
+                            
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Tên sự kiện *</label>
+                                <input type="text" id="event-title" required placeholder="VD: Họp dự án GitHub..." class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 transition-colors">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Ngày & Giờ *</label>
+                                    <input type="datetime-local" id="event-datetime" required class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors text-slate-200">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-400 mb-1">Độ ưu tiên</label>
+                                    <select id="event-priority" class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                                        <option value="low">Thấp (Low)</option>
+                                        <option value="medium" selected>Trung bình</option>
+                                        <option value="high">Cao (High)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Mô tả chi tiết</label>
+                                <textarea id="event-description" rows="3" placeholder="Ghi chú thêm thông tin sự kiện..." class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 transition-colors"></textarea>
+                            </div>
+
+                            <!-- Notification Channels Checkboxes -->
+                            <div class="space-y-2 border-t border-slate-800/80 pt-3">
+                                <label class="block text-xs font-semibold text-slate-400">Gửi thông báo qua:</label>
+                                <div class="flex flex-wrap gap-4 text-xs">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="notify-browser" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                        <span><i class="fa-solid fa-desktop text-slate-400"></i> Web Browser</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="notify-discord" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                        <span><i class="fa-brands fa-discord text-discord"></i> Discord</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="notify-email" class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                        <span><i class="fa-solid fa-envelope text-amber-400"></i> Email</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 pt-2">
+                                <button type="submit" class="flex-1 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-brand-500/20 text-sm transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-floppy-disk"></i> Lưu & Ghim Lịch
+                                </button>
+                                <button type="button" onclick="resetForm()" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs transition-colors">
+                                    Hủy
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Danh Sách Sự Kiện -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <!-- Controls Bar -->
+                        <div class="glass p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+                                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                                <input type="text" id="search-input" oninput="renderEvents()" placeholder="Tìm kiếm lịch hẹn..." class="bg-transparent text-sm w-full focus:outline-none">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg text-xs bg-brand-600 text-white">Tất cả</button>
+                                <button onclick="setFilter('pinned')" id="filter-pinned" class="px-3 py-1.5 rounded-lg text-xs bg-slate-800 text-slate-400 hover:text-white">Đã ghim</button>
+                                <button onclick="setFilter('upcoming')" id="filter-upcoming" class="px-3 py-1.5 rounded-lg text-xs bg-slate-800 text-slate-400 hover:text-white">Sắp tới</button>
+                            </div>
+                        </div>
+
+                        <!-- Cards Container -->
+                        <div id="events-container" class="space-y-3">
+                            <!-- Events will be rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: SETTINGS (DISCORD & EMAIL) -->
+            <section id="view-settings" class="space-y-6 hidden">
+                <div class="glass p-6 rounded-2xl space-y-6 max-w-3xl mx-auto">
+                    <div>
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-brand-500"></i> Cấu Hình Thông Báo Kênh Ngoại Bút
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Kết nối Discord Webhook & dịch vụ Email để nhận thông báo tự động khi tới hạn sự kiện.</p>
+                    </div>
+
+                    <!-- Discord Settings -->
+                    <div class="space-y-4 border-t border-slate-800 pt-5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-md font-semibold flex items-center gap-2 text-discord">
+                                <i class="fa-brands fa-discord text-xl"></i> Discord Webhook Integration
+                            </h3>
+                            <button onclick="testDiscordWebhook()" class="px-3 py-1.5 bg-discord/20 hover:bg-discord/30 text-discord border border-discord/30 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-paper-plane"></i> Test Gửi Discord
+                            </button>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1">Webhook URL</label>
+                            <input type="url" id="setting-discord-url" placeholder="https://discord.com/api/webhooks/..." class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-discord transition-colors">
+                            <p class="text-[11px] text-slate-500 mt-1">Dán URL Webhook từ Discord Channel của bạn vào đây.</p>
+                        </div>
+                    </div>
+
+                    <!-- Email Settings (Formspree or EmailJS endpoint) -->
+                    <div class="space-y-4 border-t border-slate-800 pt-5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-md font-semibold flex items-center gap-2 text-amber-400">
+                                <i class="fa-solid fa-envelope text-xl"></i> Email Notification Endpoint (Formspree)
+                            </h3>
+                            <button onclick="testEmailNotification()" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 rounded-lg text-xs transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-paper-plane"></i> Test Gửi Email
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Email Nhận Thông Báo</label>
+                                <input type="email" id="setting-email-to" placeholder="your-email@gmail.com" class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 mb-1">Formspree Endpoint URL (Tùy chọn)</label>
+                                <input type="url" id="setting-email-endpoint" placeholder="https://formspree.io/f/your_form_id" class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400 transition-colors">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Browser Notification Request -->
+                    <div class="space-y-4 border-t border-slate-800 pt-5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-md font-semibold flex items-center gap-2">
+                                    <i class="fa-solid fa-bell text-brand-500"></i> Quyền Thông Báo Trình Duyệt
+                                </h3>
+                                <p class="text-xs text-slate-400">Cần cấp quyền để ứng dụng đẩy Pop-up khi duyệt Web.</p>
+                            </div>
+                            <button onclick="requestNotificationPermission()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-medium transition-colors">
+                                Kích Hoạt Quyền
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Save Settings Button -->
+                    <div class="pt-4 flex justify-end">
+                        <button onclick="saveSettings()" class="px-6 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white rounded-xl font-medium text-sm shadow-lg shadow-brand-500/20 hover:opacity-95 transition-opacity">
+                            <i class="fa-solid fa-check"></i> Lưu Tất Cả Cấu Hình
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: GITHUB & DISCORD DEPLOY GUIDE -->
+            <section id="view-guide" class="space-y-6 hidden">
+                <div class="glass p-6 rounded-2xl space-y-6 max-w-4xl mx-auto">
+                    <h2 class="text-xl font-bold flex items-center gap-2 border-b border-slate-800 pb-4">
+                        <i class="fa-brands fa-github text-2xl"></i> Hướng Dẫn Deploy Lên GitHub Pages & Lấy Discord Webhook
+                    </h2>
+
+                    <!-- Step 1: Discord Webhook -->
+                    <div class="space-y-3">
+                        <h3 class="text-md font-bold text-discord flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-discord/20 border border-discord flex items-center justify-center text-xs">1</span>
+                            Cách tạo Discord Webhook nhận thông báo
+                        </h3>
+                        <ol class="list-decimal list-inside text-sm text-slate-300 space-y-2 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                            <li>Mở ứng dụng Discord trên máy tính hoặc trình duyệt.</li>
+                            <li>Vào <b>Server Settings</b> (Cài đặt máy chủ) hoặc click chuột phải vào <b>Kênh (Channel)</b> bạn muốn nhận thông báo -> chọn <b>Edit Channel</b>.</li>
+                            <li>Chọn mục <b>Integrations</b> (Tích hợp) -> Click vào <b>Webhooks</b>.</li>
+                            <li>Bấm <b>New Webhook</b>, đặt tên cho Bot (VD: <code class="text-amber-400">Lịch Reminder Bot</code>) và chọn Channel gửi đến.</li>
+                            <li>Nhấn <b>Copy Webhook URL</b>.</li>
+                            <li>Quay lại ứng dụng này, sang tab <b>Cấu Hình Nhắc Nhở</b> và dán link vào ô <b>Discord Webhook URL</b> -> Bấm Lưu.</li>
+                        </ol>
+                    </div>
+
+                    <!-- Step 2: Push to GitHub Pages -->
+                    <div class="space-y-3">
+                        <h3 class="text-md font-bold text-emerald-400 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-xs">2</span>
+                            Cách đưa ứng dụng này lên GitHub Pages miễn phí
+                        </h3>
+                        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3 text-sm text-slate-300">
+                            <p><b>Bước 2.1:</b> Đặt tên tệp file HTML này là <code class="bg-slate-800 text-brand-400 px-2 py-0.5 rounded">index.html</code>.</p>
+                            <p><b>Bước 2.2:</b> Đăng nhập vào trang <a href="https://github.com" target="_blank" class="text-brand-400 underline">GitHub.com</a> và bấm <b>New Repository</b>.</p>
+                            <p><b>Bước 2.3:</b> Đặt tên Repo (VD: <code class="text-amber-400">my-event-scheduler</code>), để chế độ <b>Public</b>, sau đó nhấn <b>Create Repository</b>.</p>
+                            <p><b>Bước 2.4:</b> Tải file <code class="text-brand-400">index.html</code> lên Repo vừa tạo (Bấm <i>uploading an existing file</i> -> Chọn file -> Commit changes).</p>
+                            <p><b>Bước 2.5:</b> Kích hoạt GitHub Pages:</p>
+                            <ul class="list-disc list-inside pl-4 text-xs text-slate-400 space-y-1">
+                                <li>Vào mục <b>Settings</b> của Repository đó.</li>
+                                <li>Tìm mục <b>Pages</b> ở cột menu bên trái.</li>
+                                <li>Tại phần <b>Build and deployment -> Branch</b>: Chọn branch <code class="text-white">main</code> (hoặc <code class="text-white">master</code>) và thư mục <code class="text-white">/(root)</code>.</li>
+                                <li>Bấm <b>Save</b>. Sau khoảng 1-2 phút, GitHub sẽ cấp cho bạn đường link Web dạng: <code class="text-emerald-400">https://<your-username>.github.io/my-event-scheduler/</code>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Management
+        let events = JSON.parse(localStorage.getItem('app_events') || '[]');
+        let settings = JSON.parse(localStorage.getItem('app_settings') || '{"discordUrl":"","emailTo":"","emailEndpoint":""}');
+        let activeFilter = 'all';
+        let timerCheckInterval = null;
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettingsForm();
+            renderEvents();
+            updateStats();
+            startEventScheduler();
+            checkNotificationPermissions();
+        });
+
+        // Navigation Switcher
+        function switchTab(tabName) {
+            document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+
+            // Reset tab styles
+            ['dashboard', 'settings', 'guide'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tabName) {
+                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 bg-brand-600 text-white shadow-md";
+                } else {
+                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center gap-2";
+                }
+            });
+        }
+
+        // Save / Update Event
+        function handleSaveEvent(e) {
+            e.preventDefault();
+            const id = document.getElementById('event-id').value;
+            const title = document.getElementById('event-title').value.trim();
+            const datetime = document.getElementById('event-datetime').value;
+            const priority = document.getElementById('event-priority').value;
+            const description = document.getElementById('event-description').value.trim();
+            const notifyBrowser = document.getElementById('notify-browser').checked;
+            const notifyDiscord = document.getElementById('notify-discord').checked;
+            const notifyEmail = document.getElementById('notify-email').checked;
+
+            if (!title || !datetime) {
+                showToast("Vui lòng điền đầy đủ tên và thời gian sự kiện!", "error");
+                return;
+            }
+
+            if (id) {
+                // Edit existing
+                const index = events.findIndex(item => item.id === id);
+                if (index !== -1) {
+                    events[index] = {
+                        ...events[index],
+                        title, datetime, priority, description,
+                        channels: { browser: notifyBrowser, discord: notifyDiscord, email: notifyEmail }
+                    };
+                    showToast("Đã cập nhật sự kiện!", "success");
+                }
+            } else {
+                // Create new
+                const newEvent = {
+                    id: Date.now().toString(),
+                    title,
+                    datetime,
+                    priority,
+                    description,
+                    pinned: true,
+                    notified: false,
+                    channels: { browser: notifyBrowser, discord: notifyDiscord, email: notifyEmail },
+                    createdAt: new Date().toISOString()
+                };
+                events.push(newEvent);
+                showToast("Đã tạo và ghim sự kiện mới!", "success");
+            }
+
+            saveEventsToStorage();
+            resetForm();
+            renderEvents();
+            updateStats();
+        }
+
+        function resetForm() {
+            document.getElementById('event-form').reset();
+            document.getElementById('event-id').value = '';
+            document.getElementById('form-mode').textContent = 'Mới';
+            document.getElementById('form-mode').className = 'text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded-md';
+        }
+
+        function editEvent(id) {
+            const item = events.find(e => e.id === id);
+            if (!item) return;
+
+            document.getElementById('event-id').value = item.id;
+            document.getElementById('event-title').value = item.title;
+            document.getElementById('event-datetime').value = item.datetime;
+            document.getElementById('event-priority').value = item.priority;
+            document.getElementById('event-description').value = item.description || '';
+            document.getElementById('notify-browser').checked = item.channels?.browser ?? true;
+            document.getElementById('notify-discord').checked = item.channels?.discord ?? true;
+            document.getElementById('notify-email').checked = item.channels?.email ?? false;
+
+            document.getElementById('form-mode').textContent = 'Chỉnh sửa';
+            document.getElementById('form-mode').className = 'text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-md';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function togglePin(id) {
+            const index = events.findIndex(e => e.id === id);
+            if (index !== -1) {
+                events[index].pinned = !events[index].pinned;
+                saveEventsToStorage();
+                renderEvents();
+                updateStats();
+                showToast(events[index].pinned ? "Đã ghim sự kiện!" : "Đã bỏ ghim sự kiện", "info");
+            }
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(e => e.id !== id);
+            saveEventsToStorage();
+            renderEvents();
+            updateStats();
+            showToast("Đã xóa sự kiện thành công", "info");
+        }
+
+        // Storage Helper
+        function saveEventsToStorage() {
+            localStorage.setItem('app_events', JSON.stringify(events));
+        }
+
+        // Render Events List
+        function renderEvents() {
+            const container = document.getElementById('events-container');
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+
+            // Filter logic
+            let filtered = events.filter(e => {
+                const matchesSearch = e.title.toLowerCase().includes(searchQuery) || (e.description && e.description.toLowerCase().includes(searchQuery));
+                if (activeFilter === 'pinned') return matchesSearch && e.pinned;
+                if (activeFilter === 'upcoming') return matchesSearch && new Date(e.datetime) > new Date();
+                return matchesSearch;
+            });
+
+            // Sort: Pinned first, then by datetime
+            filtered.sort((a, b) => {
+                if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
+                return new Date(a.datetime) - new Date(b.datetime);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="glass p-8 text-center rounded-2xl text-slate-500">
+                        <i class="fa-regular fa-calendar-xmark text-4xl mb-3"></i>
+                        <p class="text-sm">Không tìm thấy sự kiện nào.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const isExpired = new Date(item.datetime) < new Date();
+                const priorityColors = {
+                    high: 'bg-red-500/10 text-red-400 border-red-500/30',
+                    medium: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+                    low: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                };
+
+                const formattedDate = new Date(item.datetime).toLocaleString('vi-VN', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                return `
+                    <div class="glass-card p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${item.pinned ? 'border-l-4 border-l-brand-500' : ''}">
+                        <div class="space-y-1 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-semibold text-white text-base">${escapeHtml(item.title)}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full border ${priorityColors[item.priority] || priorityColors.medium}">
+                                    ${item.priority.toUpperCase()}
+                                </span>
+                                ${item.pinned ? '<span class="text-xs text-amber-400"><i class="fa-solid fa-thumbtack"></i> Đã ghim</span>' : ''}
+                                ${isExpired ? '<span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Đã qua</span>' : ''}
+                            </div>
+                            <div class="text-xs text-slate-400 flex items-center gap-4">
+                                <span><i class="fa-regular fa-clock text-brand-400"></i> ${formattedDate}</span>
+                                <span class="flex items-center gap-1.5">
+                                    ${item.channels?.browser ? '<i class="fa-solid fa-desktop text-slate-300" title="Web Alert"></i>' : ''}
+                                    ${item.channels?.discord ? '<i class="fa-brands fa-discord text-discord" title="Discord Alert"></i>' : ''}
+                                    ${item.channels?.email ? '<i class="fa-solid fa-envelope text-amber-400" title="Email Alert"></i>' : ''}
+                                </span>
+                            </div>
+                            ${item.description ? `<p class="text-xs text-slate-300 mt-1 line-clamp-2">${escapeHtml(item.description)}</p>` : ''}
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-2 md:pt-0 border-slate-800">
+                            <button onclick="togglePin('${item.id}')" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors" title="${item.pinned ? 'Bỏ ghim' : 'Ghim'}">
+                                <i class="fa-solid fa-thumbtack ${item.pinned ? 'text-amber-400' : ''}"></i>
+                            </button>
+                            <button onclick="editEvent('${item.id}')" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors" title="Chỉnh sửa">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteEvent('${item.id}')" class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs transition-colors" title="Xóa">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setFilter(filter) {
+            activeFilter = filter;
+            ['all', 'pinned', 'upcoming'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === filter) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs bg-brand-600 text-white";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs bg-slate-800 text-slate-400 hover:text-white";
+                }
+            });
+            renderEvents();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').textContent = events.length;
+            document.getElementById('stat-pinned').textContent = events.filter(e => e.pinned).length;
+            document.getElementById('stat-upcoming').textContent = events.filter(e => new Date(e.datetime) > new Date()).length;
+
+            const discordStatus = document.getElementById('stat-discord-status');
+            if (settings.discordUrl) {
+                discordStatus.textContent = 'Đã sẵn sàng';
+                discordStatus.className = 'text-xs font-semibold text-emerald-400';
+            } else {
+                discordStatus.textContent = 'Chưa cấu hình';
+                discordStatus.className = 'text-xs font-semibold text-slate-500';
+            }
+        }
+
+        // Settings Management
+        function loadSettingsForm() {
+            document.getElementById('setting-discord-url').value = settings.discordUrl || '';
+            document.getElementById('setting-email-to').value = settings.emailTo || '';
+            document.getElementById('setting-email-endpoint').value = settings.emailEndpoint || '';
+        }
+
+        function saveSettings() {
+            settings.discordUrl = document.getElementById('setting-discord-url').value.trim();
+            settings.emailTo = document.getElementById('setting-email-to').value.trim();
+            settings.emailEndpoint = document.getElementById('setting-email-endpoint').value.trim();
+
+            localStorage.setItem('app_settings', JSON.stringify(settings));
+            updateStats();
+            showToast("Đã lưu cấu hình cài đặt!", "success");
+        }
+
+        // Test Notifications Direct Trigger
+        async function testDiscordWebhook() {
+            const url = document.getElementById('setting-discord-url').value.trim();
+            if (!url) {
+                showToast("Vui lòng nhập Discord Webhook URL trước!", "error");
+                return;
+            }
+
+            showToast("Đang gửi thử tin nhắn đến Discord...", "info");
+            const success = await sendDiscordNotification({
+                title: "🔔 THỬ NGHIỆM THÔNG BÁO DISCORD",
+                description: "Hệ thống kết nối Discord Webhook từ EventHub Pro hoạt động bình thường!",
+                priority: "high",
+                datetime: new Date().toISOString()
+            }, url);
+
+            if (success) {
+                showToast("Đã gửi thông báo đến Discord thành công!", "success");
+            } else {
+                showToast("Gửi Discord thất bại. Kiểm tra lại Webhook URL!", "error");
+            }
+        }
+
+        async function testEmailNotification() {
+            const email = document.getElementById('setting-email-to').value.trim();
+            const endpoint = document.getElementById('setting-email-endpoint').value.trim();
+
+            if (!email) {
+                showToast("Vui lòng nhập Email người nhận!", "error");
+                return;
+            }
+
+            showToast("Đang kiểm tra gửi Email...", "info");
+            const success = await sendEmailNotification({
+                title: "TEST EMAIL REMINDER",
+                description: "Thử nghiệm hệ thống nhắc nhở email từ EventHub Pro",
+                datetime: new Date().toISOString()
+            }, email, endpoint);
+
+            if (success) {
+                showToast("Đã kích hoạt gửi Email thử nghiệm!", "success");
+            }
+        }
+
+        // Real Notifications Dispatcher
+        async function sendDiscordNotification(eventItem, webhookUrl = settings.discordUrl) {
+            if (!webhookUrl) return false;
+
+            const priorityColors = { high: 15158332, medium: 15105570, low: 3066993 };
+
+            const payload = {
+                embeds: [{
+                    title: `📌 NHẮC NHỞ LỊCH: ${eventItem.title}`,
+                    description: eventItem.description || "Không có mô tả chi tiết.",
+                    color: priorityColors[eventItem.priority] || 3447003,
+                    fields: [
+                        { name: "🕒 Thời gian", value: new Date(eventItem.datetime).toLocaleString('vi-VN'), inline: true },
+                        { name: "⚡ Độ ưu tiên", value: (eventItem.priority || 'medium').toUpperCase(), inline: true }
+                    ],
+                    footer: { text: "EventHub Pro Scheduler" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            try {
+                const res = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                return res.ok;
+            } catch (err) {
+                console.error("Discord Notification Error:", err);
+                return false;
+            }
+        }
+
+        async function sendEmailNotification(eventItem, toEmail = settings.emailTo, endpoint = settings.emailEndpoint) {
+            if (!toEmail) return false;
+
+            // If Formspree endpoint is available
+            if (endpoint) {
+                try {
+                    await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: toEmail,
+                            subject: `[Lịch Ghim] Nhắc nhở: ${eventItem.title}`,
+                            message: `Sự kiện "${eventItem.title}" vào lúc ${new Date(eventItem.datetime).toLocaleString('vi-VN')}. Mô tả: ${eventItem.description || 'Không có'}`
+                        })
+                    });
+                    return true;
+                } catch (e) {
+                    console.error("Email endpoint error", e);
+                    return false;
+                }
+            } else {
+                // Fallback simulated mailto alert
+                showToast(`[Email simulation sent to ${toEmail}]`, "info");
+                return true;
+            }
+        }
+
+        function triggerBrowserNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: "https://cdn-icons-png.flaticon.com/512/3652/3652191.png"
+                });
+            }
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        showToast("Đã cấp quyền thông báo trình duyệt!", "success");
+                    } else {
+                        showToast("Quyền thông báo bị từ chối.", "error");
+                    }
+                });
+            } else {
+                showToast("Trình duyệt không hỗ trợ Web Notifications.", "error");
+            }
+        }
+
+        function checkNotificationPermissions() {
+            if ("Notification" in window && Notification.permission === "default") {
+                // optional prompt on launch
+            }
+        }
+
+        // Background Scheduler Loop (Runs every 10 seconds)
+        function startEventScheduler() {
+            if (timerCheckInterval) clearInterval(timerCheckInterval);
+
+            timerCheckInterval = setInterval(() => {
+                const now = new Date();
+
+                events.forEach(item => {
+                    if (item.notified) return;
+
+                    const eventTime = new Date(item.datetime);
+                    // Trigger if time is past or within 10 seconds margin
+                    if (now >= eventTime) {
+                        item.notified = true; // Mark notified to prevent duplicate calls
+
+                        // Dispatch notifications based on event settings
+                        if (item.channels?.browser ?? true) {
+                            triggerBrowserNotification(`🔔 ĐẾN GIỜ: ${item.title}`, item.description || `Thời gian: ${eventTime.toLocaleTimeString()}`);
+                        }
+
+                        if (item.channels?.discord ?? true) {
+                            sendDiscordNotification(item);
+                        }
+
+                        if (item.channels?.email ?? false) {
+                            sendEmailNotification(item);
+                        }
+
+                        showToast(`🔔 Sự kiện "${item.title}" đã đến giờ!`, "success");
+                        saveEventsToStorage();
+                        renderEvents();
+                    }
+                });
+            }, 10000); // Check every 10s
+        }
+
+        // Toast Notification System
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgColors = {
+                success: "bg-slate-900/90 border-emerald-500/50 text-emerald-300",
+                error: "bg-slate-900/90 border-red-500/50 text-red-300",
+                info: "bg-slate-900/90 border-brand-500/50 text-brand-300"
+            };
+
+            const icons = {
+                success: '<i class="fa-solid fa-circle-check text-emerald-400"></i>',
+                error: '<i class="fa-solid fa-circle-xmark text-red-400"></i>',
+                info: '<i class="fa-solid fa-circle-info text-brand-400"></i>'
+            };
+
+            toast.className = `glass p-4 rounded-xl border shadow-xl flex items-center gap-3 text-sm transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto ${bgColors[type] || bgColors.info}`;
+            toast.innerHTML = `
+                ${icons[type] || icons.info}
+                <span class="flex-1">${escapeHtml(message)}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            // Remove after 4s
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function (m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
+</body>
+</html>
