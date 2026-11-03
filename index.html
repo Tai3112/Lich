@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventHub Pro - Ghim Lịch & Nhắc Nhở Đa Kênh</title>
+    <title>EventHub Pro - Ghim Lịch & Nhắc Nhở Thông Báo</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -172,7 +172,55 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-slate-400 mb-1">Mô tả chi tiết</label>
-                                <textarea id="event-description" rows="3" placeholder="Ghi chú thêm thông tin sự kiện..." class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 transition-colors"></textarea>
+                                <textarea id="event-description" rows="2" placeholder="Ghi chú thêm thông tin sự kiện..." class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-500 transition-colors"></textarea>
+                            </div>
+
+                            <!-- Advance Reminder Options -->
+                            <div class="space-y-2 border-t border-slate-800/80 pt-3">
+                                <label class="block text-xs font-semibold text-slate-400">Thời điểm nhắc trước:</label>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <label class="flex items-center gap-2 cursor-pointer bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                                        <input type="checkbox" id="advance-1w" class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                        <span><i class="fa-solid fa-calendar-week text-indigo-400"></i> Trước 1 tuần</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+                                        <input type="checkbox" id="advance-1d" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                        <span><i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Trước 1 ngày</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer bg-slate-900/60 p-2 rounded-lg border border-slate-800 col-span-2">
+                                        <input type="checkbox" id="advance-ontime" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                        <span><i class="fa-solid fa-bell text-emerald-400"></i> Đúng thời điểm hẹn</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Repeat Reminder Settings -->
+                            <div class="space-y-2 border-t border-slate-800/80 pt-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-slate-400">Nhắc lặp lại nhiều lần:</label>
+                                    <input type="checkbox" id="enable-repeat" onchange="toggleRepeatOptions()" class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
+                                </div>
+                                <div id="repeat-options-box" class="hidden space-y-2 bg-slate-900/40 p-3 rounded-xl border border-slate-800 text-xs">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <span class="text-slate-400 block mb-1">Tần suất lặp</span>
+                                            <select id="repeat-interval" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+                                                <option value="5">Mỗi 5 phút</option>
+                                                <option value="15" selected>Mỗi 15 phút</option>
+                                                <option value="30">Mỗi 30 phút</option>
+                                                <option value="60">Mỗi 1 giờ</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-400 block mb-1">Bắt đầu nhắc</span>
+                                            <select id="repeat-start-before" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200">
+                                                <option value="30">Trước 30 phút</option>
+                                                <option value="60" selected>Trước 1 giờ</option>
+                                                <option value="120">Trước 2 giờ</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Notification Channels Checkboxes -->
@@ -181,7 +229,7 @@
                                 <div class="flex flex-wrap gap-4 text-xs">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" id="notify-browser" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
-                                        <span><i class="fa-solid fa-desktop text-slate-400"></i> Web Browser</span>
+                                        <span><i class="fa-solid fa-desktop text-slate-400"></i> Browser</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" id="notify-discord" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-0">
@@ -255,7 +303,7 @@
                         </div>
                     </div>
 
-                    <!-- Email Settings (Formspree or EmailJS endpoint) -->
+                    <!-- Email Settings -->
                     <div class="space-y-4 border-t border-slate-800 pt-5">
                         <div class="flex items-center justify-between">
                             <h3 class="text-md font-semibold flex items-center gap-2 text-amber-400">
@@ -340,7 +388,7 @@
                                 <li>Vào mục <b>Settings</b> của Repository đó.</li>
                                 <li>Tìm mục <b>Pages</b> ở cột menu bên trái.</li>
                                 <li>Tại phần <b>Build and deployment -> Branch</b>: Chọn branch <code class="text-white">main</code> (hoặc <code class="text-white">master</code>) và thư mục <code class="text-white">/(root)</code>.</li>
-                                <li>Bấm <b>Save</b>. Sau khoảng 1-2 phút, GitHub sẽ cấp cho bạn đường link Web dạng: <code class="text-emerald-400">https://<your-username>.github.io/my-event-scheduler/</code>.</li>
+                                <li>Bấm <b>Save</b>. Sau khoảng 1-2 phút, GitHub sẽ cấp cho bạn đường link Web dạng: <code class="text-emerald-400">https://&lt;your-username&gt;.github.io/my-event-scheduler/</code>.</li>
                             </ul>
                         </div>
                     </div>
@@ -356,6 +404,7 @@
         let settings = JSON.parse(localStorage.getItem('app_settings') || '{"discordUrl":"","emailTo":"","emailEndpoint":""}');
         let activeFilter = 'all';
         let timerCheckInterval = null;
+        let countdownInterval = null;
 
         // Init App
         window.addEventListener('DOMContentLoaded', () => {
@@ -363,15 +412,37 @@
             renderEvents();
             updateStats();
             startEventScheduler();
+            startCountdownLoop();
             checkNotificationPermissions();
         });
+
+        function toggleRepeatOptions() {
+            const isChecked = document.getElementById('enable-repeat').checked;
+            const box = document.getElementById('repeat-options-box');
+            if (isChecked) {
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        // Formats Date to Month / Day / Year - HH:mm
+        function formatDateMDY(dateTimeStr) {
+            const d = new Date(dateTimeStr);
+            if (isNaN(d.getTime())) return dateTimeStr;
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${month}/${day}/${year} - ${hours}:${minutes}`;
+        }
 
         // Navigation Switcher
         function switchTab(tabName) {
             document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
             document.getElementById(`view-${tabName}`).classList.remove('hidden');
 
-            // Reset tab styles
             ['dashboard', 'settings', 'guide'].forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (t === tabName) {
@@ -390,6 +461,15 @@
             const datetime = document.getElementById('event-datetime').value;
             const priority = document.getElementById('event-priority').value;
             const description = document.getElementById('event-description').value.trim();
+            
+            const advance1w = document.getElementById('advance-1w').checked;
+            const advance1d = document.getElementById('advance-1d').checked;
+            const advanceOntime = document.getElementById('advance-ontime').checked;
+
+            const enableRepeat = document.getElementById('enable-repeat').checked;
+            const repeatInterval = parseInt(document.getElementById('repeat-interval').value);
+            const repeatStartBefore = parseInt(document.getElementById('repeat-start-before').value);
+
             const notifyBrowser = document.getElementById('notify-browser').checked;
             const notifyDiscord = document.getElementById('notify-discord').checked;
             const notifyEmail = document.getElementById('notify-email').checked;
@@ -399,19 +479,35 @@
                 return;
             }
 
+            const advanceSettings = {
+                oneWeek: advance1w,
+                oneDay: advance1d,
+                onTime: advanceOntime,
+                notifiedOneWeek: false,
+                notifiedOneDay: false,
+                notifiedOnTime: false
+            };
+
+            const repeatSettings = {
+                enabled: enableRepeat,
+                intervalMinutes: repeatInterval,
+                startBeforeMinutes: repeatStartBefore,
+                lastNotifiedAt: null
+            };
+
             if (id) {
-                // Edit existing
                 const index = events.findIndex(item => item.id === id);
                 if (index !== -1) {
                     events[index] = {
                         ...events[index],
                         title, datetime, priority, description,
+                        advance: { ...events[index].advance, ...advanceSettings },
+                        repeat: repeatSettings,
                         channels: { browser: notifyBrowser, discord: notifyDiscord, email: notifyEmail }
                     };
                     showToast("Đã cập nhật sự kiện!", "success");
                 }
             } else {
-                // Create new
                 const newEvent = {
                     id: Date.now().toString(),
                     title,
@@ -419,7 +515,8 @@
                     priority,
                     description,
                     pinned: true,
-                    notified: false,
+                    advance: advanceSettings,
+                    repeat: repeatSettings,
                     channels: { browser: notifyBrowser, discord: notifyDiscord, email: notifyEmail },
                     createdAt: new Date().toISOString()
                 };
@@ -438,6 +535,7 @@
             document.getElementById('event-id').value = '';
             document.getElementById('form-mode').textContent = 'Mới';
             document.getElementById('form-mode').className = 'text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded-md';
+            document.getElementById('repeat-options-box').classList.add('hidden');
         }
 
         function editEvent(id) {
@@ -449,6 +547,16 @@
             document.getElementById('event-datetime').value = item.datetime;
             document.getElementById('event-priority').value = item.priority;
             document.getElementById('event-description').value = item.description || '';
+
+            document.getElementById('advance-1w').checked = item.advance?.oneWeek ?? false;
+            document.getElementById('advance-1d').checked = item.advance?.oneDay ?? true;
+            document.getElementById('advance-ontime').checked = item.advance?.onTime ?? true;
+
+            document.getElementById('enable-repeat').checked = item.repeat?.enabled ?? false;
+            if (item.repeat?.intervalMinutes) document.getElementById('repeat-interval').value = item.repeat.intervalMinutes;
+            if (item.repeat?.startBeforeMinutes) document.getElementById('repeat-start-before').value = item.repeat.startBeforeMinutes;
+            toggleRepeatOptions();
+
             document.getElementById('notify-browser').checked = item.channels?.browser ?? true;
             document.getElementById('notify-discord').checked = item.channels?.discord ?? true;
             document.getElementById('notify-email').checked = item.channels?.email ?? false;
@@ -478,9 +586,38 @@
             showToast("Đã xóa sự kiện thành công", "info");
         }
 
-        // Storage Helper
         function saveEventsToStorage() {
             localStorage.setItem('app_events', JSON.stringify(events));
+        }
+
+        function getRemainingTimeString(targetIso) {
+            const diff = new Date(targetIso) - new Date();
+            if (diff <= 0) return `<span class="text-slate-500">Đã qua thời gian</span>`;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            let res = [];
+            if (days > 0) res.push(`${days}d`);
+            if (hours > 0 || days > 0) res.push(`${hours}h`);
+            res.push(`${minutes}m`);
+            res.push(`${seconds}s`);
+
+            return `<span class="font-mono text-emerald-400 font-semibold">${res.join(' ')}</span> nữa`;
+        }
+
+        function startCountdownLoop() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                document.querySelectorAll('.event-countdown').forEach(el => {
+                    const targetIso = el.getAttribute('data-time');
+                    if (targetIso) {
+                        el.innerHTML = getRemainingTimeString(targetIso);
+                    }
+                });
+            }, 1000);
         }
 
         // Render Events List
@@ -488,7 +625,6 @@
             const container = document.getElementById('events-container');
             const searchQuery = document.getElementById('search-input').value.toLowerCase();
 
-            // Filter logic
             let filtered = events.filter(e => {
                 const matchesSearch = e.title.toLowerCase().includes(searchQuery) || (e.description && e.description.toLowerCase().includes(searchQuery));
                 if (activeFilter === 'pinned') return matchesSearch && e.pinned;
@@ -496,7 +632,6 @@
                 return matchesSearch;
             });
 
-            // Sort: Pinned first, then by datetime
             filtered.sort((a, b) => {
                 if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
                 return new Date(a.datetime) - new Date(b.datetime);
@@ -520,14 +655,7 @@
                     low: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                 };
 
-                const formattedDate = new Date(item.datetime).toLocaleString('vi-VN', {
-                    weekday: 'short',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+                const formattedDate = formatDateMDY(item.datetime);
 
                 return `
                     <div class="glass-card p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${item.pinned ? 'border-l-4 border-l-brand-500' : ''}">
@@ -540,14 +668,26 @@
                                 ${item.pinned ? '<span class="text-xs text-amber-400"><i class="fa-solid fa-thumbtack"></i> Đã ghim</span>' : ''}
                                 ${isExpired ? '<span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">Đã qua</span>' : ''}
                             </div>
-                            <div class="text-xs text-slate-400 flex items-center gap-4">
-                                <span><i class="fa-regular fa-clock text-brand-400"></i> ${formattedDate}</span>
-                                <span class="flex items-center gap-1.5">
+                            
+                            <div class="text-xs text-slate-400 flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <span><i class="fa-regular fa-clock text-brand-400"></i> ${formattedDate} (MM/DD/YYYY)</span>
+                                <span class="event-countdown" data-time="${item.datetime}">${getRemainingTimeString(item.datetime)}</span>
+                            </div>
+
+                            <div class="text-[11px] text-slate-400 flex items-center gap-3 pt-1">
+                                <span><i class="fa-solid fa-bell text-indigo-400"></i> Nhắc: 
+                                    ${item.advance?.oneWeek ? '1 tuần | ' : ''}
+                                    ${item.advance?.oneDay ? '1 ngày | ' : ''}
+                                    ${item.advance?.onTime ? 'Đúng giờ' : ''}
+                                    ${item.repeat?.enabled ? ` | Lặp lại (${item.repeat.intervalMinutes}m)` : ''}
+                                </span>
+                                <span class="flex items-center gap-1.5 ml-auto md:ml-0">
                                     ${item.channels?.browser ? '<i class="fa-solid fa-desktop text-slate-300" title="Web Alert"></i>' : ''}
                                     ${item.channels?.discord ? '<i class="fa-brands fa-discord text-discord" title="Discord Alert"></i>' : ''}
                                     ${item.channels?.email ? '<i class="fa-solid fa-envelope text-amber-400" title="Email Alert"></i>' : ''}
                                 </span>
                             </div>
+
                             ${item.description ? `<p class="text-xs text-slate-300 mt-1 line-clamp-2">${escapeHtml(item.description)}</p>` : ''}
                         </div>
 
@@ -595,7 +735,6 @@
             }
         }
 
-        // Settings Management
         function loadSettingsForm() {
             document.getElementById('setting-discord-url').value = settings.discordUrl || '';
             document.getElementById('setting-email-to').value = settings.emailTo || '';
@@ -612,7 +751,6 @@
             showToast("Đã lưu cấu hình cài đặt!", "success");
         }
 
-        // Test Notifications Direct Trigger
         async function testDiscordWebhook() {
             const url = document.getElementById('setting-discord-url').value.trim();
             if (!url) {
@@ -626,7 +764,7 @@
                 description: "Hệ thống kết nối Discord Webhook từ EventHub Pro hoạt động bình thường!",
                 priority: "high",
                 datetime: new Date().toISOString()
-            }, url);
+            }, "Thông báo thử nghiệm", url);
 
             if (success) {
                 showToast("Đã gửi thông báo đến Discord thành công!", "success");
@@ -656,19 +794,18 @@
             }
         }
 
-        // Real Notifications Dispatcher
-        async function sendDiscordNotification(eventItem, webhookUrl = settings.discordUrl) {
+        async function sendDiscordNotification(eventItem, prefixTag = "", webhookUrl = settings.discordUrl) {
             if (!webhookUrl) return false;
 
             const priorityColors = { high: 15158332, medium: 15105570, low: 3066993 };
 
             const payload = {
                 embeds: [{
-                    title: `📌 NHẮC NHỞ LỊCH: ${eventItem.title}`,
+                    title: `📌 ${prefixTag || 'NHẮC NHỞ LỊCH'}: ${eventItem.title}`,
                     description: eventItem.description || "Không có mô tả chi tiết.",
                     color: priorityColors[eventItem.priority] || 3447003,
                     fields: [
-                        { name: "🕒 Thời gian", value: new Date(eventItem.datetime).toLocaleString('vi-VN'), inline: true },
+                        { name: "🕒 Thời gian", value: formatDateMDY(eventItem.datetime) + " (MM/DD/YYYY)", inline: true },
                         { name: "⚡ Độ ưu tiên", value: (eventItem.priority || 'medium').toUpperCase(), inline: true }
                     ],
                     footer: { text: "EventHub Pro Scheduler" },
@@ -692,7 +829,6 @@
         async function sendEmailNotification(eventItem, toEmail = settings.emailTo, endpoint = settings.emailEndpoint) {
             if (!toEmail) return false;
 
-            // If Formspree endpoint is available
             if (endpoint) {
                 try {
                     await fetch(endpoint, {
@@ -701,7 +837,7 @@
                         body: JSON.stringify({
                             email: toEmail,
                             subject: `[Lịch Ghim] Nhắc nhở: ${eventItem.title}`,
-                            message: `Sự kiện "${eventItem.title}" vào lúc ${new Date(eventItem.datetime).toLocaleString('vi-VN')}. Mô tả: ${eventItem.description || 'Không có'}`
+                            message: `Sự kiện "${eventItem.title}" vào lúc ${formatDateMDY(eventItem.datetime)}. Mô tả: ${eventItem.description || 'Không có'}`
                         })
                     });
                     return true;
@@ -710,7 +846,6 @@
                     return false;
                 }
             } else {
-                // Fallback simulated mailto alert
                 showToast(`[Email simulation sent to ${toEmail}]`, "info");
                 return true;
             }
@@ -741,44 +876,77 @@
 
         function checkNotificationPermissions() {
             if ("Notification" in window && Notification.permission === "default") {
-                // optional prompt on launch
+                // optional prompt
             }
         }
 
-        // Background Scheduler Loop (Runs every 10 seconds)
+        function dispatchEventAlerts(item, tagText) {
+            if (item.channels?.browser ?? true) {
+                triggerBrowserNotification(`🔔 ${tagText}: ${item.title}`, `${item.description || ''} - Thời gian: ${formatDateMDY(item.datetime)}`);
+            }
+            if (item.channels?.discord ?? true) {
+                sendDiscordNotification(item, tagText);
+            }
+            if (item.channels?.email ?? false) {
+                sendEmailNotification(item);
+            }
+            showToast(`🔔 [${tagText}]: ${item.title}`, "success");
+        }
+
+        // Advanced Multi-alert Scheduler Loop
         function startEventScheduler() {
             if (timerCheckInterval) clearInterval(timerCheckInterval);
 
             timerCheckInterval = setInterval(() => {
-                const now = new Date();
+                const now = new Date().getTime();
 
                 events.forEach(item => {
-                    if (item.notified) return;
+                    const eventTime = new Date(item.datetime).getTime();
+                    const diffMinutes = (eventTime - now) / (1000 * 60);
 
-                    const eventTime = new Date(item.datetime);
-                    // Trigger if time is past or within 10 seconds margin
-                    if (now >= eventTime) {
-                        item.notified = true; // Mark notified to prevent duplicate calls
-
-                        // Dispatch notifications based on event settings
-                        if (item.channels?.browser ?? true) {
-                            triggerBrowserNotification(`🔔 ĐẾN GIỜ: ${item.title}`, item.description || `Thời gian: ${eventTime.toLocaleTimeString()}`);
+                    // Check Advance: 1 Week (10080 mins)
+                    if (item.advance?.oneWeek && !item.advance.notifiedOneWeek) {
+                        if (diffMinutes <= 10080 && diffMinutes > 0) {
+                            item.advance.notifiedOneWeek = true;
+                            dispatchEventAlerts(item, "NHẮC TRƯỚC 1 TUẦN");
                         }
+                    }
 
-                        if (item.channels?.discord ?? true) {
-                            sendDiscordNotification(item);
+                    // Check Advance: 1 Day (1440 mins)
+                    if (item.advance?.oneDay && !item.advance.notifiedOneDay) {
+                        if (diffMinutes <= 1440 && diffMinutes > 0) {
+                            item.advance.notifiedOneDay = true;
+                            dispatchEventAlerts(item, "NHẮC TRƯỚC 1 NGÀY");
                         }
+                    }
 
-                        if (item.channels?.email ?? false) {
-                            sendEmailNotification(item);
+                    // Check Advance: On Time
+                    if (item.advance?.onTime && !item.advance.notifiedOnTime) {
+                        if (diffMinutes <= 0) {
+                            item.advance.notifiedOnTime = true;
+                            dispatchEventAlerts(item, "ĐẾN GIỜ HẸN");
                         }
+                    }
 
-                        showToast(`🔔 Sự kiện "${item.title}" đã đến giờ!`, "success");
-                        saveEventsToStorage();
-                        renderEvents();
+                    // Check Repeat Alerts
+                    if (item.repeat?.enabled) {
+                        const startBeforeMins = item.repeat.startBeforeMinutes || 60;
+                        const intervalMins = item.repeat.intervalMinutes || 15;
+
+                        if (diffMinutes <= startBeforeMins && diffMinutes >= 0) {
+                            const lastNotified = item.repeat.lastNotifiedAt ? new Date(item.repeat.lastNotifiedAt).getTime() : 0;
+                            const elapsedSinceLastNotification = (now - lastNotified) / (1000 * 60);
+
+                            if (!item.repeat.lastNotifiedAt || elapsedSinceLastNotification >= intervalMins) {
+                                item.repeat.lastNotifiedAt = new Date().toISOString();
+                                dispatchEventAlerts(item, `NHẮC LẮP LẠI (Còn ${Math.ceil(diffMinutes)} phút)`);
+                            }
+                        }
                     }
                 });
-            }, 10000); // Check every 10s
+
+                saveEventsToStorage();
+            }, 10000); // Check loop every 10 sec
         }
 
         // Toast Notification System
@@ -806,12 +974,10 @@
 
             container.appendChild(toast);
 
-            // Animate in
             requestAnimationFrame(() => {
                 toast.classList.remove('translate-y-2', 'opacity-0');
             });
 
-            // Remove after 4s
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => toast.remove(), 300);
